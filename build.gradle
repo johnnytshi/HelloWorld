@@ -11,6 +11,17 @@ buildscript {
     }
 }
 
+buildscript {
+    repositories {
+        maven {
+            url 'https://buddybuild.artifactoryonline.com/buddybuild/buddybuild-plugin'
+        }
+    }
+    dependencies {
+        classpath group: 'com.buddybuild', name: 'plugins', version: '1.0.88'
+    }
+}
+
 allprojects {
     repositories {
         jcenter()
