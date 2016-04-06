@@ -13,12 +13,12 @@ buildscript {
 
 buildscript {
     repositories {
-        maven {
-            url 'https://buddybuild.artifactoryonline.com/buddybuild/buddybuild-plugin'
-            credentials {
-                username "admin"
-                password "9iit6om4vO"
+        if ('allow' == System.properties['build.network_access']) {
+            maven {
+                url 'https://buddybuild.artifactoryonline.com/buddybuild/buddybuild-plugin'
             }
+        } else {
+            maven { url 'dependencies' }
         }
     }
     dependencies {
