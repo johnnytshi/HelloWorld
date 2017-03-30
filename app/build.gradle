@@ -15,7 +15,7 @@ android {
         applicationId "buddybuild.com.helloworldandroid.pro"
         minSdkVersion 19
         targetSdkVersion 21
-        versionCode 1
+        versionCode 3
         versionName "1.0"
         signingConfig signingConfigs.config
     }
@@ -27,14 +27,20 @@ android {
     }
     splits {
         density {
+            // Configures multiple APKs based on screen density.
             enable true
-            exclude 'ldpi', 'tvdpi', 'xxxhdpi'
+
+            // Specifies a list of screen densities Gradle should not create multiple APKs for.
+            exclude "ldpi", "xxhdpi", "xxxhdpi"
+
+            // Specifies a list of compatible screen size settings for the manifest.
             compatibleScreens 'small', 'normal', 'large', 'xlarge'
         }
     }
 }
 
 ext.additionalDensities = ['xhdpi': ['280'], 'xxhdpi': ['420', '400', '360'], 'xxxhdpi': ['560']]
+ext.densityCodes = ['mdpi': 1, 'hdpi': 2, 'xhdpi': 3]
 import com.android.build.OutputFile
 
 android.applicationVariants.all { variant ->
@@ -52,6 +58,24 @@ android.applicationVariants.all { variant ->
                 }
                 manifestFile.text = manifestText
             }
+        }
+
+        // Stores the value of ext.abiCodes that is associated with the ABI for this variant.
+        def baseAbiVersionCode =
+                // Determines the ABI for this variant and returns the mapped value.
+                project.ext.densityCodes.get(output.getFilter(OutputFile.DENSITY))
+
+        // Because abiCodes.get() returns null for ABIs that are not mapped by ext.abiCodes,
+        // the following code does not override the version code for universal APKs.
+        // However, because we want universal APKs to have the lowest version code,
+        // this outcome is desirable.
+        if (baseAbiVersionCode != null) {
+
+            // Assigns the new version code to versionCodeOverride, which changes the version code
+            // for only the output APK, not for the variant itself. Skipping this step simply
+            // causes Gradle to use the value of variant.versionCode for the APK.
+            output.versionCodeOverride =
+                    baseAbiVersionCode * 1000 + variant.versionCode
         }
     }
 }
