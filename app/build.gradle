@@ -25,66 +25,33 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    productFlavors {
-        notPro {
-            applicationId "buddybuild.com.helloworldandroid.notpro"
-        }
-        pro {
-            applicationId "buddybuild.com.helloworldandroid.pro"
-        }
-    }
     splits {
-        // Configures multiple APKs based on ABI.
-        abi {
-            // Enables building multiple APKs per ABI.
+        density {
             enable true
-
-            // Resets the list of ABIs that Gradle should create APKs for to none.
-            reset()
-
-            // Specifies a list of ABIs that Gradle should create APKs for.
-            include "x86", "armeabi-v7a", "mips"
-
-            // Specifies that we do not want to also generate a universal APK that includes all ABIs.
-            universalApk false
+            exclude 'ldpi', 'tvdpi', 'xxxhdpi'
+            compatibleScreens 'small', 'normal', 'large', 'xlarge'
         }
     }
 }
 
-// Map for the version code that gives each ABI a value.
-ext.abiCodes = ['armeabi-v7a':1, mips:2, x86:3]
-
-// For per-density APKs, create a similar map like this:
-// ext.densityCodes = ['mdpi': 1, 'hdpi': 2, 'xhdpi': 3]
-
+ext.additionalDensities = ['xhdpi': ['280'], 'xxhdpi': ['420', '400', '360'], 'xxxhdpi': ['560']]
 import com.android.build.OutputFile
 
-// For each APK output variant, override versionCode with a combination of
-// ext.abiCodes * 1000 + variant.versionCode. In this example, variant.versionCode
-// is equal to defaultConfig.versionCode. If you configure product flavors that
-// define their own versionCode, variant.versionCode uses that value instead.
 android.applicationVariants.all { variant ->
-
-    // Assigns a different version code for each output APK
-    // other than the universal APK.
+    // assign different version code for each output
     variant.outputs.each { output ->
-
-        // Stores the value of ext.abiCodes that is associated with the ABI for this variant.
-        def baseAbiVersionCode =
-                // Determines the ABI for this variant and returns the mapped value.
-                project.ext.abiCodes.get(output.getFilter(OutputFile.ABI))
-
-        // Because abiCodes.get() returns null for ABIs that are not mapped by ext.abiCodes,
-        // the following code does not override the version code for universal APKs.
-        // However, because we want universal APKs to have the lowest version code,
-        // this outcome is desirable.
-        if (baseAbiVersionCode != null) {
-
-            // Assigns the new version code to versionCodeOverride, which changes the version code
-            // for only the output APK, not for the variant itself. Skipping this step simply
-            // causes Gradle to use the value of variant.versionCode for the APK.
-            output.versionCodeOverride =
-                    baseAbiVersionCode * 1000 + variant.versionCode
+        if (output.getFilter(OutputFile.DENSITY) != null && project.ext.additionalDensities.containsKey(output.getFilter(OutputFile.DENSITY))) {
+            output.processManifest.doFirst {
+                def manifestFile = new File(project.buildDir, "intermediates" + File.separator + "manifests" + File.separator + "density" + File.separator + output.getFilter(OutputFile.DENSITY) + File.separator + variant.buildType.name + File.separator + "AndroidManifest.xml")
+                def manifestText = manifestFile.text
+                for (String density : project.ext.additionalDensities.get(output.getFilter(OutputFile.DENSITY))) {
+                    manifestText = manifestText.replaceAll("</compatible-screens>", "<screen android:screenSize=\"small\" android:screenDensity=\"${density}\" />\n" +
+                            "<screen android:screenSize=\"large\" android:screenDensity=\"${density}\" />\n" +
+                            "<screen android:screenSize=\"xlarge\" android:screenDensity=\"${density}\" />\n" +
+                            "<screen android:screenSize=\"normal\" android:screenDensity=\"${density}\" />\n </compatible-screens>")
+                }
+                manifestFile.text = manifestText
+            }
         }
     }
 }
