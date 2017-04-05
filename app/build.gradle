@@ -35,6 +35,8 @@ android {
 
             // Specifies a list of compatible screen size settings for the manifest.
             compatibleScreens 'small', 'normal', 'large', 'xlarge'
+            
+            universalApk false
         }
     }
 }
