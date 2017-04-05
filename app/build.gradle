@@ -3,19 +3,19 @@ apply plugin: 'com.android.application'
 android {
     signingConfigs {
         config {
-            keyAlias 'release'
+            keyAlias 'myalias'
             keyPassword 'password'
-            storeFile file('../release.jks')
+            storeFile file('../mykeystore.keystore')
             storePassword 'password'
         }
     }
     compileSdkVersion 21
     buildToolsVersion "25.0.0"
     defaultConfig {
-        applicationId "buddybuild.com.helloworldandroid.pro"
+        applicationId "buddybuild.com.helloworldandroid"
         minSdkVersion 19
         targetSdkVersion 21
-        versionCode 4
+        versionCode 200
         versionName "1.0"
         signingConfig signingConfigs.config
     }
@@ -35,8 +35,6 @@ android {
 
             // Specifies a list of compatible screen size settings for the manifest.
             compatibleScreens 'small', 'normal', 'large', 'xlarge'
-            
-            universalApk false
         }
     }
 }
